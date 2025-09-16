@@ -1,0 +1,31 @@
+# Folders
+processing/
+done/
+original/
+pending/
+transcribed/
+failed/
+
+# Files
+*.log
+*.pt
+*.wav
+*.mp3
+*.m4a
+*.flac
+*.aac
+*.ogg
+*.aiff
+*.aif
+*.mov
+*.mp4
+meta.json
+
+# Python specific files
+__pycache__/
+.ipynb_checkpoints/
+.DS_Store
+env/
+.venv/
+env.bak/
+.venv.bak/
