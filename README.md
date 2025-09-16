@@ -1,8 +1,8 @@
 # ⚒️ WhisperForge
 
-> **Forjando transcripciones claras a partir de audios**  
-> Un pipeline automatizado con [OpenAI Whisper](https://github.com/openai/whisper) para convertir grabaciones en texto organizado, con carpetas limpias, logs de ejecución y métricas de trazabilidad.  
-> Diseñado para la transcripción automática de audio a texto con alta fidelidad. Soporta múltiples formatos (MP3, WAV, M4A, MP4, FLAC, CAF, AIFF, MOV, entre otros).
+**Forjando transcripciones claras a partir de audios**  
+Un pipeline automatizado con [OpenAI Whisper](https://github.com/openai/whisper) para convertir grabaciones en texto organizado, con carpetas limpias, logs de ejecución y métricas de trazabilidad.  
+Diseñado para la transcripción automática de audio a texto con alta fidelidad. Soporta múltiples formatos (MP3, WAV, M4A, MP4, FLAC, CAF, AIFF, MOV, entre otros).
 
 ### Casos de uso:
 - 🎙️ Transcripción de **podcasts** y **entrevistas** para publicación en blogs o medios digitales.  
@@ -120,8 +120,8 @@ INITIAL_PROMPT = (
 ```
 
 Además:  
-- `NORMALIZE_AUDIO = True` → normaliza a **WAV 16kHz mono (PCM16)** antes de transcribir.  
-- `NORMALIZE_AUDIO = False` → usa directamente el archivo original.  
+- `NORMALIZE_AUDIO = True` → Normaliza a **WAV 16kHz mono (PCM16)** antes de transcribir.  
+- `NORMALIZE_AUDIO = False` → Usa directamente el archivo original.  
 
 ---
 

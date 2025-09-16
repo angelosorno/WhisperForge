@@ -73,10 +73,21 @@ fi
 echo "📥 Instalando OpenAI Whisper desde el repositorio oficial"
 pip install git+https://github.com/openai/whisper.git
 
+# Jupyter (para ejecutar WhisperLoop.ipynb)
+echo "📓 Instalando Jupyter Notebook"
+pip install notebook
+
 # Create folders
 echo "📂 Creando estructura de carpetas"
 mkdir -p pending processing done failed
 
+# Optional: install requirements.txt if present
+if [ -f "requirements.txt" ]; then
+  echo "📄 Instalando requirements.txt"
+  pip install -r requirements.txt
+fi
+
 echo "✅ Instalación completa."
 echo "👉 Activa el entorno con:  source env/bin/activate"
-echo "👉 Coloca audios en 'pending/' y ejecuta tu script (p. ej. 'python transcriber.py')."
+echo "👉 Recomendado en Apple Silicon (antes de importar torch): export PYTORCH_ENABLE_MPS_FALLBACK=1"
+echo "👉 Coloca audios en 'pending/' y ejecuta tu cuaderno: jupyter notebook WhisperLoop.ipynb"
