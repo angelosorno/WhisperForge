@@ -4,17 +4,17 @@ set -euo pipefail
 echo "⚒️ WhisperForge Installer — macOS / Linux"
 echo "-----------------------------------------"
 
-# Detect OS
 OS="$(uname -s)"
-echo "Detected OS: $OS"
+ARCH="$(uname -m)"
+echo "Detected OS: $OS  | Arch: $ARCH"
 
-# Ensure Python3
+# 1) Python3 presente
 if ! command -v python3 >/dev/null 2>&1; then
   echo "❌ Python3 no encontrado. Instálalo y vuelve a correr este script."
   exit 1
 fi
 
-# Create venv
+# 2) Crear venv
 if [ ! -d "env" ]; then
   echo "📦 Creando entorno virtual env/"
   python3 -m venv env
@@ -22,17 +22,20 @@ else
   echo "ℹ️  Entorno env/ ya existe"
 fi
 
-# Activate venv
+# 3) Activar venv
 # shellcheck disable=SC1091
 source env/bin/activate
 
-# Upgrade basics
+# 4) Mostrar versiones base
+echo "🐍 Python: $(python -V)"
+echo "📦 Pip:     $(pip -V)"
+
+# 5) Actualizar herramientas básicas
 echo "⬆️  Actualizando pip/setuptools/wheel"
 pip install -U pip setuptools wheel
 
-# Install FFmpeg
+# 6) Instalar FFmpeg
 if [ "$OS" = "Darwin" ]; then
-  # macOS
   if ! command -v brew >/dev/null 2>&1; then
     echo "🍺 Homebrew no encontrado. Instálalo desde https://brew.sh o instala ffmpeg manualmente."
   else
@@ -40,7 +43,6 @@ if [ "$OS" = "Darwin" ]; then
     brew list ffmpeg >/dev/null 2>&1 || brew install ffmpeg
   fi
 elif [ "$OS" = "Linux" ]; then
-  # Linux (Debian/Ubuntu)
   if command -v apt-get >/dev/null 2>&1; then
     echo "🐧 Instalando ffmpeg con APT"
     sudo apt-get update -y
@@ -52,42 +54,59 @@ else
   echo "⚠️  Sistema no reconocido para instalación automática de ffmpeg. Instálalo manualmente."
 fi
 
-# Install PyTorch
+# 7) Instalar PyTorch (según plataforma)
+echo "🧱 Instalando PyTorch…"
 if [ "$OS" = "Darwin" ]; then
-  echo "🍎 Instalando PyTorch (macOS, con soporte MPS si Apple Silicon)"
-  pip install torch torchvision torchaudio
+  # En macOS (Intel o Apple Silicon) basta PyPI; MPS viene con las ruedas CPU modernas
+  pip install --upgrade torch torchvision torchaudio
 elif [ "$OS" = "Linux" ]; then
   if command -v nvidia-smi >/dev/null 2>&1; then
-    echo "🟢 NVIDIA GPU detectada — instalando ruedas CUDA 12.1"
-    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+    echo "🟢 NVIDIA GPU detectada — ruedas CUDA 12.1"
+    pip install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
   else
-    echo "⚪ Instalando ruedas CPU de PyTorch (sin CUDA)"
-    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+    echo "⚪ Sin NVIDIA — ruedas CPU"
+    pip install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
   fi
 else
-  echo "⚪ Instalando ruedas CPU (fallback)"
-  pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+  echo "⚪ Fallback CPU"
+  pip install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 fi
 
-# Install Whisper
-echo "📥 Instalando OpenAI Whisper desde el repositorio oficial"
-pip install git+https://github.com/openai/whisper.git
+# 8) Instalar Whisper
+echo "📥 Instalando OpenAI Whisper"
+# Preferible usar el paquete de PyPI (estable); tu script importa 'whisper'
+pip install --upgrade openai-whisper
 
-# Jupyter (para ejecutar WhisperLoop.ipynb)
-echo "📓 Instalando Jupyter Notebook"
-pip install notebook
+# 9) (Opcional) Jupyter solo si lo necesitas
+# echo "📓 Instalando Jupyter Notebook"
+# pip install notebook
 
-# Create folders
+# 10) Crear estructura de carpetas
 echo "📂 Creando estructura de carpetas"
 mkdir -p pending processing done failed
 
-# Optional: install requirements.txt if present
+# 11) Instalar requirements.txt si existe
 if [ -f "requirements.txt" ]; then
   echo "📄 Instalando requirements.txt"
   pip install -r requirements.txt
 fi
 
+# 12) Verificación rápida en tiempo real (torch + whisper)
+echo "🧪 Verificando instalación…"
+python - <<'PY'
+import sys, platform
+try:
+    import torch, whisper
+    print(f"[OK] torch {torch.__version__} | python {platform.python_version()}")
+    has_mps = getattr(torch.backends, "mps", None) and torch.backends.mps.is_available()
+    print(f"[INFO] MPS available: {bool(has_mps)}")
+    print(f"[OK] whisper importado correctamente ({getattr(whisper, '__version__', 'unknown')})")
+except Exception as e:
+    print(f"[FAIL] Verificación falló: {e}", file=sys.stderr)
+    sys.exit(1)
+PY
+
 echo "✅ Instalación completa."
-echo "👉 Activa el entorno con:  source env/bin/activate"
-echo "👉 Recomendado en Apple Silicon (antes de importar torch): export PYTORCH_ENABLE_MPS_FALLBACK=1"
-echo "👉 Coloca audios en 'pending/' y ejecuta tu cuaderno: jupyter notebook WhisperLoop.ipynb"
+echo "👉 Activa el entorno cuando lo necesites:  source env/bin/activate"
+echo "👉 En macOS puedes usar MPS fallback:     export PYTORCH_ENABLE_MPS_FALLBACK=1"
+echo "👉 Coloca audios en 'pending/' y ejecuta: python WhisperLoop.py"
