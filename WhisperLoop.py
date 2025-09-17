@@ -12,7 +12,7 @@ from whisper.tokenizer import get_tokenizer
 # Model Selector
 # > turbo, base, small, medium, large, large-v2, turbo, large-v3-turbo, large-v3
 
-MODEL_NAME = "base"
+MODEL_NAME = "large-v3"
 
 # CPU 
 
@@ -246,7 +246,7 @@ def BuildPromptForWhisper(styleSample: str, glossary: list[str]) -> str:
 # ÚNICA fuente de verdad del prompt
 INITIAL_PROMPT = BuildPromptForWhisper(StyleSample, Glossary)
 
-# Reporta cuántos tokens quedaron
+# Reporte de cuántos tokens quedaron
 try:
     prompt_tokens = len(Tokenizer.encode(INITIAL_PROMPT))
     log_line(f"[PROMPT] tokens={prompt_tokens}")
@@ -255,14 +255,12 @@ except Exception:
 
 
 # Carga del Modelo (Cacheada)
-
 model, DEVICE, FP16 = get_whisper_model(MODEL_NAME)
 print(f"Modelo '{MODEL_NAME}' listo en {DEVICE} fp16={FP16}")
 # log_line(f"[MODEL] Modelo '{MODEL_NAME}' cargado en {DEVICE} fp16={FP16}")
 
 
 # Bucle Procesador de Audios
-
 audios = list_audios(PENDING)
 if not audios:
     print("No hay audios en la carpeta ./pending.")
