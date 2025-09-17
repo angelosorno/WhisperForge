@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run WhisperLoop",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/WhisperLoop.py",
+      "console": "integratedTerminal",
+      "env": {
+        "PYTORCH_ENABLE_MPS_FALLBACK": "1"
+      }
+    }
+  ]
+}
