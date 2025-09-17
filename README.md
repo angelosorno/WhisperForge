@@ -23,7 +23,7 @@ cd WhisperForge
 
 ---
 
-## 📦 Instalación rápida (recomendada)
+## 📦 Instalación rápida (Recomendada)
 
 Ejecuta el instalador automático (macOS / Linux):
 
@@ -104,7 +104,7 @@ Si algo falla:
 
 ---
 
-## ⚙️ Configuración recomendada (ejemplo)
+## ⚙️ Configuración recomendada
 
 En tu `WhisperLoop.ipynb`, puedes configurar el modelo, idioma y prompt:
 
@@ -163,7 +163,7 @@ Al final de cada ejecución, el sistema imprime un **informe en consola** con:
 
 ---
 
-## 🧪 Instalación manual (si no usas el script)
+## 🧪 Instalación manual (Si no usas el script)
 
 ```bash
 python3 -m venv env
