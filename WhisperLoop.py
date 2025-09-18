@@ -254,199 +254,203 @@ except Exception:
     pass
 
 
-# Carga del Modelo (Cacheada)
-model, DEVICE, FP16 = get_whisper_model(MODEL_NAME)
-print(f"Modelo '{MODEL_NAME}' listo en {DEVICE} fp16={FP16}")
-# log_line(f"[MODEL] Modelo '{MODEL_NAME}' cargado en {DEVICE} fp16={FP16}")
-
-
-# Bucle Procesador de Audios
-audios = list_audios(PENDING)
-if not audios:
-    print("No hay audios en la carpeta ./pending.")
-else:
-    total_jobs = 0
-    ok_jobs = 0
-    failed_jobs = 0
-    total_elapsed = datetime.timedelta()
-    total_audio_dur = 0.0
-    normalized_count = 0
-    rtfs = []
-
-    for audio_in in audios:
-        job_name = make_job_name(audio_in)
-        job_dir = PROCESSING / job_name
-        job_dir.mkdir(parents=True, exist_ok=True)
-
-        audio_tmp = job_dir / audio_in.name
-        shutil.copy2(str(audio_in), str(audio_tmp))
-
-        start_wall = datetime.datetime.now()
-        start_perf = time.perf_counter()
-
-        # Preparación con fallback
-        try:
-            src_for_whisper = prepareAudioforWhisper(audio_tmp, job_dir, enabled=NORMALIZE_AUDIO)
-            if src_for_whisper != audio_tmp:
-                log_line(f"[AUDIO] Normalizado a 16k WAV: {src_for_whisper.name}")
-                normalized_count += 1
-            else:
-                log_line(f"[AUDIO] Sin normalizar (usando original): {audio_tmp.name}")
-        except Exception as prep_err:
-            src_for_whisper = audio_tmp
-            log_line(f"[AUDIO] Preparación falló, uso original: {audio_tmp.name} :: {prep_err}")
-
-        log_line(f"[START] {audio_in.name} -> {job_dir.name} [model={MODEL_NAME}, device={DEVICE}, fp16={FP16}]")
-
-        try:
-            # Transcripción
-            result = model.transcribe(
-                str(src_for_whisper),
-                language=LANG,
-                task="transcribe",
-                temperature=TEMPERATURE,
-                beam_size=BEAM_SIZE,
-                patience=1.0,
-                condition_on_previous_text=True,
-                initial_prompt=INITIAL_PROMPT if INITIAL_PROMPT.strip() else None,
-                fp16=FP16
-            )
-
-            # Texto
-            text = nfc(result.get("text", "")).strip()
-            text = re.sub(r"[ \t]+", " ", text)
-            text = re.sub(r"\s+\n", "\n", text).strip() + "\n"
-
-            out_txt = job_dir / f"{job_name}.txt"
-            out_txt.write_text(text, encoding="utf-8")
-
-            # Métricas
-            end_wall = datetime.datetime.now()
-            elapsed = datetime.timedelta(seconds=(time.perf_counter() - start_perf))
-
-            audio_used_path = Path(src_for_whisper)
-            try:
-                audio_duration = ffprobe_duration(audio_used_path)
-            except Exception as e:
-                audio_duration = None
-                log_line(f"[WARN] ffprobe falló para {audio_used_path.name}: {e}")
-
-            rtf = (elapsed.total_seconds() / audio_duration) if (audio_duration and audio_duration > 0) else None
-
-            last_end = None
-            try:
-                segs = result.get("segments")
-                if isinstance(segs, list) and segs:
-                    last_end = float(segs[-1].get("end", 0.0))
-            except Exception:
-                last_end = None
-
-            coverage_ratio = (last_end / audio_duration) if (last_end is not None and audio_duration and audio_duration > 0) else None
-
-            elapsed_sec_val = elapsed.total_seconds()
-            audio_dur_sec_val = audio_duration if (audio_duration and audio_duration > 0) else None
-
-            elapsed_min = sec_to_min(elapsed_sec_val)
-            audio_duration_min = sec_to_min(audio_dur_sec_val)
-            elapsed_hms = fmt_hms(elapsed_sec_val)
-            audio_duration_hms = fmt_hms(audio_dur_sec_val)
-
-            try:
-                prompt_tokens = len(Tokenizer.encode(INITIAL_PROMPT))
-                log_line(f"[PROMPT] tokens={prompt_tokens} preview={INITIAL_PROMPT[:120]!r}")
-            except Exception:
-                prompt_tokens = None
-            # Metadatos
-            meta = {
-                "job_name": job_name,
-                "start_time": start_wall.isoformat(),
-                "end_time": end_wall.isoformat(),
-                "elapsed_sec": round(elapsed_sec_val, 3),
-                "audio_duration_sec": round(audio_dur_sec_val, 3) if audio_dur_sec_val is not None else None,
-                "elapsed_min": elapsed_min,
-                "audio_duration_min": audio_duration_min,
-                "elapsed_hms": elapsed_hms,
-                "audio_duration_hms": audio_duration_hms,
-                "rtf": round(rtf, 3) if rtf is not None else None,
-                "coverage_last_segment_end_sec": round(last_end, 3) if last_end is not None else None,
-                "coverage_ratio": round(coverage_ratio, 4) if coverage_ratio is not None else None,
-                "model": MODEL_NAME,
-                "device": DEVICE,
-                "fp16": FP16,
-                "language": LANG,
-                "beam_size": BEAM_SIZE,
-                "temperature": (list(TEMPERATURE) if isinstance(TEMPERATURE, tuple) else TEMPERATURE),
-                "initial_prompt_len_chars": len(INITIAL_PROMPT.strip()),
-                "initial_prompt_len_tokens": prompt_tokens,
-                "normalized_16k": bool(NORMALIZE_AUDIO and audio_used_path.name.endswith("input.16k.wav")),
-                "input_original_name": audio_in.name,
-                "input_original_sha1": sha1_file(audio_in),
-                "input_used_name": audio_used_path.name,
-                "input_used_sha1": sha1_file(audio_used_path),
-                "output_txt": out_txt.name,
-                "chars": len(text),
-                "words": len(text.split()),
-                "segments": (len(result.get("segments", [])) if isinstance(result.get("segments"), list) else None),
-                "whisper_version": getattr(whisper, "__version__", "git"),
-                "torch_version": torch.__version__,
-                "os": f"{platform.system()} {platform.release()}",
-            }
-
-            # meta.json atómico
-            tmp_meta = job_dir / "meta.json.tmp"
-            tmp_meta.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
-            tmp_meta.replace(job_dir / "meta.json")
-
-            # Mover a done
-            final_dir = DONE / job_name
-            shutil.move(str(job_dir), str(final_dir))
-            audio_in.unlink(missing_ok=False)
-
-            log_line(f"[DONE]  {audio_in.name} -> {final_dir} "
-                     f"(dur={elapsed_hms} ≈ {elapsed_min} min, "
-                     f"audio={audio_duration_hms} ≈ {audio_duration_min} min, "
-                     f"RTF={meta['rtf']})")
-
-            total_jobs += 1
-            ok_jobs += 1
-            total_elapsed += elapsed
-            if audio_dur_sec_val is not None:
-                total_audio_dur += audio_dur_sec_val
-            if rtf is not None:
-                rtfs.append(rtf)
-
-        except Exception as e:
-            failed_jobs += 1
-            total_jobs += 1
-            tb = traceback.format_exc()
-            log_line(f"[FAIL]  {audio_in.name} :: {e}")
-            (job_dir / "error.log").write_text(tb, encoding="utf-8")
-            failed_dir = (WORKDIR / "failed" / job_name)
-            failed_dir.parent.mkdir(parents=True, exist_ok=True)
-            shutil.move(str(job_dir), str(failed_dir))
-            continue
-
-    # Informe
-    print("\n===== 📊 Informe de Ejecución =====")
-    print(f"Total procesados: {total_jobs}")
-    print(f"  ✅ Exitosos: {ok_jobs}")
-    print(f"  ❌ Fallidos: {failed_jobs}")
-    if total_jobs > 0:
-        print(f"Normalizados: {normalized_count}/{total_jobs} ({(100.0*normalized_count/total_jobs):.1f}%)")
-    if ok_jobs > 0:
-        if total_audio_dur > 0:
-            avg_audio = total_audio_dur / ok_jobs
-            print(f"Duración promedio de audio: {avg_audio:.1f} s")
-        else:
-            print("Duración promedio de audio: N/A")
-        avg_elapsed = total_elapsed / ok_jobs
-        print(f"Tiempo promedio de ejecución: {avg_elapsed}")
-        if rtfs:
-            avg_rtf = sum(rtfs) / len(rtfs)
-            print(f"RTF Promedio: {avg_rtf:.3f}")
-        else:
-            print("RTF Promedio: N/A")
+def main():
+    # Carga del Modelo (Cacheada)
+    model, DEVICE, FP16 = get_whisper_model(MODEL_NAME)
+    print(f"Modelo '{MODEL_NAME}' listo en {DEVICE} fp16={FP16}")
+    # log_line(f"[MODEL] Modelo '{MODEL_NAME}' cargado en {DEVICE} fp16={FP16}")
+    
+    # Bucle Procesador de Audios
+    audios = list_audios(PENDING)
+    if not audios:
+        print("No hay audios en la carpeta ./pending.")
     else:
-        print("No hubo jobs exitosos.")
-    print("===================================")
-    print("\nTerminado. Revisa ./done para los finalizados y ./pending para los no procesados.")
+        total_jobs = 0
+        ok_jobs = 0
+        failed_jobs = 0
+        total_elapsed = datetime.timedelta()
+        total_audio_dur = 0.0
+        normalized_count = 0
+        rtfs = []
+
+        for audio_in in audios:
+            job_name = make_job_name(audio_in)
+            job_dir = PROCESSING / job_name
+            job_dir.mkdir(parents=True, exist_ok=True)
+
+            audio_tmp = job_dir / audio_in.name
+            shutil.copy2(str(audio_in), str(audio_tmp))
+
+            start_wall = datetime.datetime.now()
+            start_perf = time.perf_counter()
+
+            # Preparación con fallback
+            try:
+                src_for_whisper = prepareAudioforWhisper(audio_tmp, job_dir, enabled=NORMALIZE_AUDIO)
+                if src_for_whisper != audio_tmp:
+                    log_line(f"[AUDIO] Normalizado a 16k WAV: {src_for_whisper.name}")
+                    normalized_count += 1
+                else:
+                    log_line(f"[AUDIO] Sin normalizar (usando original): {audio_tmp.name}")
+            except Exception as prep_err:
+                src_for_whisper = audio_tmp
+                log_line(f"[AUDIO] Preparación falló, uso original: {audio_tmp.name} :: {prep_err}")
+
+            log_line(f"[START] {audio_in.name} -> {job_dir.name} [model={MODEL_NAME}, device={DEVICE}, fp16={FP16}]")
+
+            try:
+                # Transcripción
+                result = model.transcribe(
+                    str(src_for_whisper),
+                    language=LANG,
+                    task="transcribe",
+                    temperature=TEMPERATURE,
+                    beam_size=BEAM_SIZE,
+                    patience=1.0,
+                    condition_on_previous_text=True,
+                    initial_prompt=INITIAL_PROMPT if INITIAL_PROMPT.strip() else None,
+                    fp16=FP16
+                )
+
+                # Texto
+                text = nfc(result.get("text", "")).strip()
+                text = re.sub(r"[ \t]+", " ", text)
+                text = re.sub(r"\s+\n", "\n", text).strip() + "\n"
+
+                out_txt = job_dir / f"{job_name}.txt"
+                out_txt.write_text(text, encoding="utf-8")
+
+                # Métricas
+                end_wall = datetime.datetime.now()
+                elapsed = datetime.timedelta(seconds=(time.perf_counter() - start_perf))
+
+                audio_used_path = Path(src_for_whisper)
+                try:
+                    audio_duration = ffprobe_duration(audio_used_path)
+                except Exception as e:
+                    audio_duration = None
+                    log_line(f"[WARN] ffprobe falló para {audio_used_path.name}: {e}")
+
+                rtf = (elapsed.total_seconds() / audio_duration) if (audio_duration and audio_duration > 0) else None
+
+                last_end = None
+                try:
+                    segs = result.get("segments")
+                    if isinstance(segs, list) and segs:
+                        last_end = float(segs[-1].get("end", 0.0))
+                except Exception:
+                    last_end = None
+
+                coverage_ratio = (last_end / audio_duration) if (last_end is not None and audio_duration and audio_duration > 0) else None
+
+                elapsed_sec_val = elapsed.total_seconds()
+                audio_dur_sec_val = audio_duration if (audio_duration and audio_duration > 0) else None
+
+                elapsed_min = sec_to_min(elapsed_sec_val)
+                audio_duration_min = sec_to_min(audio_dur_sec_val)
+                elapsed_hms = fmt_hms(elapsed_sec_val)
+                audio_duration_hms = fmt_hms(audio_dur_sec_val)
+
+                try:
+                    prompt_tokens = len(Tokenizer.encode(INITIAL_PROMPT))
+                    log_line(f"[PROMPT] tokens={prompt_tokens} preview={INITIAL_PROMPT[:120]!r}")
+                except Exception:
+                    prompt_tokens = None
+                # Metadatos
+                meta = {
+                    "job_name": job_name,
+                    "start_time": start_wall.isoformat(),
+                    "end_time": end_wall.isoformat(),
+                    "elapsed_sec": round(elapsed_sec_val, 3),
+                    "audio_duration_sec": round(audio_dur_sec_val, 3) if audio_dur_sec_val is not None else None,
+                    "elapsed_min": elapsed_min,
+                    "audio_duration_min": audio_duration_min,
+                    "elapsed_hms": elapsed_hms,
+                    "audio_duration_hms": audio_duration_hms,
+                    "rtf": round(rtf, 3) if rtf is not None else None,
+                    "coverage_last_segment_end_sec": round(last_end, 3) if last_end is not None else None,
+                    "coverage_ratio": round(coverage_ratio, 4) if coverage_ratio is not None else None,
+                    "model": MODEL_NAME,
+                    "device": DEVICE,
+                    "fp16": FP16,
+                    "language": LANG,
+                    "beam_size": BEAM_SIZE,
+                    "temperature": (list(TEMPERATURE) if isinstance(TEMPERATURE, tuple) else TEMPERATURE),
+                    "initial_prompt_len_chars": len(INITIAL_PROMPT.strip()),
+                    "initial_prompt_len_tokens": prompt_tokens,
+                    "normalized_16k": bool(NORMALIZE_AUDIO and audio_used_path.name.endswith("input.16k.wav")),
+                    "input_original_name": audio_in.name,
+                    "input_original_sha1": sha1_file(audio_in),
+                    "input_used_name": audio_used_path.name,
+                    "input_used_sha1": sha1_file(audio_used_path),
+                    "output_txt": out_txt.name,
+                    "chars": len(text),
+                    "words": len(text.split()),
+                    "segments": (len(result.get("segments", [])) if isinstance(result.get("segments"), list) else None),
+                    "whisper_version": getattr(whisper, "__version__", "git"),
+                    "torch_version": torch.__version__,
+                    "os": f"{platform.system()} {platform.release()}",
+                }
+
+                # meta.json atómico
+                tmp_meta = job_dir / "meta.json.tmp"
+                tmp_meta.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+                tmp_meta.replace(job_dir / "meta.json")
+
+                # Mover a done
+                final_dir = DONE / job_name
+                shutil.move(str(job_dir), str(final_dir))
+                audio_in.unlink(missing_ok=False)
+
+                log_line(f"[DONE]  {audio_in.name} -> {final_dir} "
+                        f"(dur={elapsed_hms} ≈ {elapsed_min} min, "
+                        f"audio={audio_duration_hms} ≈ {audio_duration_min} min, "
+                        f"RTF={meta['rtf']})")
+
+                total_jobs += 1
+                ok_jobs += 1
+                total_elapsed += elapsed
+                if audio_dur_sec_val is not None:
+                    total_audio_dur += audio_dur_sec_val
+                if rtf is not None:
+                    rtfs.append(rtf)
+
+            except Exception as e:
+                failed_jobs += 1
+                total_jobs += 1
+                tb = traceback.format_exc()
+                log_line(f"[FAIL]  {audio_in.name} :: {e}")
+                (job_dir / "error.log").write_text(tb, encoding="utf-8")
+                failed_dir = (WORKDIR / "failed" / job_name)
+                failed_dir.parent.mkdir(parents=True, exist_ok=True)
+                shutil.move(str(job_dir), str(failed_dir))
+                continue
+
+        # Informe
+        print("\n===== 📊 Informe de Ejecución =====")
+        print(f"Total procesados: {total_jobs}")
+        print(f"  ✅ Exitosos: {ok_jobs}")
+        print(f"  ❌ Fallidos: {failed_jobs}")
+        if total_jobs > 0:
+            print(f"Normalizados: {normalized_count}/{total_jobs} ({(100.0*normalized_count/total_jobs):.1f}%)")
+        if ok_jobs > 0:
+            if total_audio_dur > 0:
+                avg_audio = total_audio_dur / ok_jobs
+                print(f"Duración promedio de audio: {avg_audio:.1f} s")
+            else:
+                print("Duración promedio de audio: N/A")
+            avg_elapsed = total_elapsed / ok_jobs
+            print(f"Tiempo promedio de ejecución: {avg_elapsed}")
+            if rtfs:
+                avg_rtf = sum(rtfs) / len(rtfs)
+                print(f"RTF Promedio: {avg_rtf:.3f}")
+            else:
+                print("RTF Promedio: N/A")
+        else:
+            print("No hubo jobs exitosos.")
+        print("===================================")
+        print("\nTerminado. Revisa ./done para los finalizados y ./pending para los no procesados.")
+
+# 
+if __name__ == "__main__":
+    main()
