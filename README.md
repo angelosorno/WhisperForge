@@ -1,3 +1,238 @@
+# WhisperForge Web Application 🎙️
+
+Una aplicación web profesional para transcripción de audio con **Next.js 14** y **FastAPI**, potenciada por **OpenAI Whisper**.
+
+## 🌟 Características
+
+- ✅ **Interfaz Moderna**: UI premium con Next.js 14, TypeScript y Tailwind CSS
+- ✅ **Progreso en Tiempo Real**: WebSocket para actualizaciones en vivo
+- ✅ **Múltiples Formatos**: Soporta MP3, WAV, M4A, MP4, FLAC y más de 30 formatos
+- ✅ **Alta Precisión**: Modelos Whisper large-v3 para transcripciones de alta fidelidad
+- ✅ **Drag & Drop**: Carga de archivos intuitiva
+- ✅ **Métricas Detalladas**: RTF, duración, palabras, segmentos, etc.
+- ✅ **Configuración Flexible**: Personaliza modelo, idioma, prompt y más
+- ✅ **Dark Mode**: Soporte completo para tema oscuro
+
+## 📋 Requisitos Previos
+
+- **Python 3.12+**
+- **Node.js 18+** y npm
+- **FFmpeg** (para procesamiento de audio)
+- **Entorno virtual Python** (recomendado)
+
+## 🚀 Instalación
+
+### 1. Backend (FastAPI)
+
+```bash
+# Navegar al directorio backend
+cd backend
+
+# Crear entorno virtual
+python3 -m venv venv
+source venv/bin/activate  # En Windows: venv\Scripts\activate
+
+# Instalar dependencias
+pip install -r requirements.txt
+
+# Copiar y configurar variables de entorno
+cp .env.example .env
+# Editar .env según tus necesidades
+```
+
+### 2. Frontend (Next.js)
+
+```bash
+# Navegar al directorio frontend
+cd frontend
+
+# Instalar dependencias
+npm install
+
+# Copiar y configurar variables de entorno
+cp .env.local.example .env.local
+# Editar .env.local si es necesario
+```
+
+## ▶️ Ejecución
+
+### Iniciar Backend
+
+```bash
+cd backend
+source venv/bin/activate  # Activar entorno virtual
+python main.py
+```
+
+El backend estará disponible en: `http://localhost:8000`
+- API Docs: `http://localhost:8000/docs`
+- Health Check: `http://localhost:8000/api/health`
+
+### Iniciar Frontend
+
+```bash
+cd frontend
+npm run dev
+```
+
+El frontend estará disponible en: `http://localhost:3000`
+
+## 📖 Uso
+
+1. **Accede a la aplicación** en `http://localhost:3000`
+2. **Navega a "Transcribir"** desde el menú
+3. **Arrastra un archivo de audio/video** o haz clic para seleccionar
+4. **Configura las opciones** (modelo, idioma, etc.)
+5. **Haz clic en "Iniciar Transcripción"**
+6. **Observa el progreso en tiempo real** en la página del trabajo
+7. **Descarga la transcripción** cuando esté completa
+
+## 🏗️ Estructura del Proyecto
+
+```
+WhisperForge/
+├── backend/                 # FastAPI application
+│   ├── api/                # API routes
+│   ├── core/               # Core logic (transcription, job manager)
+│   ├── models/             # Pydantic schemas
+│   ├── main.py             # Application entry point
+│   └── requirements.txt    # Python dependencies
+│
+├── frontend/               # Next.js application
+│   ├── app/               # App Router pages
+│   │   ├── jobs/         # Jobs list and detail pages
+│   │   ├── transcribe/   # Transcription page
+│   │   └── page.tsx      # Homepage
+│   ├── components/        # React components
+│   ├── lib/              # Utilities and API client
+│   └── package.json      # Node dependencies
+│
+├── pending/               # Upload directory
+├── processing/            # Processing directory
+├── done/                  # Completed jobs
+└── failed/                # Failed jobs
+```
+
+## 🔧 Configuración
+
+### Backend (.env)
+
+```env
+# Whisper Configuration
+WHISPER_MODEL=large-v3
+WHISPER_LANGUAGE=es
+WHISPER_TEMPERATURE=0.0
+WHISPER_BEAM_SIZE=8
+NORMALIZE_AUDIO=true
+
+# Server
+HOST=0.0.0.0
+PORT=8000
+
+# CORS
+CORS_ORIGINS=http://localhost:3000
+```
+
+### Frontend (.env.local)
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000/api
+NEXT_PUBLIC_WS_URL=ws://localhost:8000/api/ws
+```
+
+## 📡 API Endpoints
+
+### REST API
+
+- `GET /api/health` - Health check
+- `POST /api/upload` - Upload audio file
+- `POST /api/transcribe/{job_id}` - Start transcription
+- `GET /api/jobs` - List all jobs
+- `GET /api/jobs/{job_id}` - Get job details
+- `GET /api/jobs/{job_id}/download` - Download transcript
+- `DELETE /api/jobs/{job_id}` - Delete job
+
+### WebSocket
+
+- `WS /api/ws/{job_id}` - Real-time progress updates
+
+## 🎨 Tecnologías
+
+### Backend
+- **FastAPI** - Modern Python web framework
+- **OpenAI Whisper** - Speech-to-text model
+- **PyTorch** - ML framework
+- **WebSockets** - Real-time communication
+- **Pydantic** - Data validation
+
+### Frontend
+- **Next.js 14** - React framework with App Router
+- **TypeScript** - Type-safe JavaScript
+- **Tailwind CSS** - Utility-first CSS
+- **React Query** - Data fetching and caching
+- **Axios** - HTTP client
+- **Lucide React** - Icon library
+
+## 🐛 Troubleshooting
+
+### Backend
+
+**Error: `ffmpeg` no encontrado**
+```bash
+# macOS
+brew install ffmpeg
+
+# Ubuntu/Debian
+sudo apt-get install ffmpeg
+```
+
+**Error: MPS no soportado**
+```bash
+export PYTORCH_ENABLE_MPS_FALLBACK=1
+```
+
+### Frontend
+
+**Error: Node.js no encontrado**
+```bash
+# Instalar Node.js desde https://nodejs.org/
+# O usar nvm:
+nvm install 18
+nvm use 18
+```
+
+**Error de conexión con backend**
+- Verifica que el backend esté corriendo en `http://localhost:8000`
+- Revisa las variables de entorno en `.env.local`
+
+## 📝 Notas
+
+- **Modelos Whisper disponibles**: `base`, `small`, `medium`, `large-v2`, `large-v3`
+- **Idiomas soportados**: 100+ idiomas (español, inglés, francés, etc.)
+- **Tamaño máximo de archivo**: 500 MB (configurable)
+- **Formatos soportados**: MP3, WAV, M4A, MP4, FLAC, OGG, AAC, WMA, MOV, AVI, MKV, y más
+
+## 🤝 Contribuir
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+## 📜 Licencia
+
+MIT License - Ver archivo LICENSE para más detalles
+
+---
+
+**WhisperForge** - *Forjando transcripciones claras a partir de audios* 🔥
+
+
+
+
+- Version CLI
+
 # ⚒️ WhisperForge
 
 **Forjando transcripciones claras a partir de audios**  

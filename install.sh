@@ -14,7 +14,13 @@ if ! command -v python3 >/dev/null 2>&1; then
   exit 1
 fi
 
-# 2) Crear venv
+# 2) Node.js presente
+if ! command -v node >/dev/null 2>&1; then
+  echo "❌ Node.js no encontrado. Instálalo desde https://nodejs.org"
+  exit 1
+fi
+
+# 3) Crear venv en raíz del proyecto
 if [ ! -d "env" ]; then
   echo "📦 Creando entorno virtual env/"
   python3 -m venv env
@@ -22,19 +28,21 @@ else
   echo "ℹ️  Entorno env/ ya existe"
 fi
 
-# 3) Activar venv
+# 4) Activar venv
 # shellcheck disable=SC1091
 source env/bin/activate
 
-# 4) Mostrar versiones base
+# 5) Mostrar versiones base
 echo "🐍 Python: $(python -V)"
 echo "📦 Pip:     $(pip -V)"
+echo "📦 Node:    $(node -v)"
+echo "📦 NPM:     $(npm -v)"
 
-# 5) Actualizar herramientas básicas
+# 6) Actualizar herramientas básicas
 echo "⬆️  Actualizando pip/setuptools/wheel"
 pip install -U pip setuptools wheel
 
-# 6) Instalar FFmpeg
+# 7) Instalar FFmpeg
 if [ "$OS" = "Darwin" ]; then
   if ! command -v brew >/dev/null 2>&1; then
     echo "🍺 Homebrew no encontrado. Instálalo desde https://brew.sh o instala ffmpeg manualmente."
@@ -54,59 +62,48 @@ else
   echo "⚠️  Sistema no reconocido para instalación automática de ffmpeg. Instálalo manualmente."
 fi
 
-# 7) Instalar PyTorch (según plataforma)
-echo "🧱 Instalando PyTorch…"
-if [ "$OS" = "Darwin" ]; then
-  # En macOS (Intel o Apple Silicon) basta PyPI; MPS viene con las ruedas CPU modernas
-  pip install --upgrade torch torchvision torchaudio
-elif [ "$OS" = "Linux" ]; then
-  if command -v nvidia-smi >/dev/null 2>&1; then
-    echo "🟢 NVIDIA GPU detectada — ruedas CUDA 12.1"
-    pip install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-  else
-    echo "⚪ Sin NVIDIA — ruedas CPU"
-    pip install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
-  fi
-else
-  echo "⚪ Fallback CPU"
-  pip install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
-fi
-
-# 8) Instalar Whisper
-echo "📥 Instalando OpenAI Whisper"
-# Preferible usar el paquete de PyPI (estable); tu script importa 'whisper'
-pip install --upgrade openai-whisper
-
-# 9) (Opcional) Jupyter solo si lo necesitas
-# echo "📓 Instalando Jupyter Notebook"
-# pip install notebook
-
-# 10) Crear estructura de carpetas
+# 8) Crear estructura de carpetas
 echo "📂 Creando estructura de carpetas"
 mkdir -p pending processing done failed
 
-# 11) Instalar requirements.txt si existe
-if [ -f "requirements.txt" ]; then
-  echo "📄 Instalando requirements.txt"
-  pip install -r requirements.txt
-fi
+# 9) Instalar backend requirements (incluye PyTorch, Whisper, FastAPI, etc.)
+echo "📄 Instalando backend/requirements.txt"
+pip install -r backend/requirements.txt
 
-# 12) Verificación rápida en tiempo real (torch + whisper)
-echo "🧪 Verificando instalación…"
+# 10) Instalar frontend dependencies
+echo "📦 Instalando dependencias del frontend"
+cd frontend
+npm install
+cd ..
+
+# 11) Verificación rápida
+echo "🧪 Verificando instalación del backend…"
 python - <<'PY'
 import sys, platform
 try:
-    import torch, whisper
+    import torch, whisper, fastapi
     print(f"[OK] torch {torch.__version__} | python {platform.python_version()}")
     has_mps = getattr(torch.backends, "mps", None) and torch.backends.mps.is_available()
     print(f"[INFO] MPS available: {bool(has_mps)}")
     print(f"[OK] whisper importado correctamente ({getattr(whisper, '__version__', 'unknown')})")
+    print(f"[OK] fastapi {fastapi.__version__}")
 except Exception as e:
     print(f"[FAIL] Verificación falló: {e}", file=sys.stderr)
     sys.exit(1)
 PY
 
+echo ""
 echo "✅ Instalación completa."
-echo "👉 Activa el entorno cuando lo necesites:  source env/bin/activate"
-echo "👉 En macOS puedes usar MPS fallback:     export PYTORCH_ENABLE_MPS_FALLBACK=1"
-echo "👉 Coloca audios en 'pending/' y ejecuta: python WhisperLoop.py"
+echo ""
+echo "👉 Para arrancar el backend:"
+echo "   source env/bin/activate"
+echo "   export PYTORCH_ENABLE_MPS_FALLBACK=1  # Solo en macOS"
+echo "   cd backend && python main.py"
+echo ""
+echo "👉 Para arrancar el frontend (en otra terminal):"
+echo "   cd frontend"
+echo "   npm run dev"
+echo ""
+echo "👉 Accede a la aplicación en: http://localhost:3000"
+echo ""
+echo "💡 Tip: Los jobs se auto-inician al subirlos. Usa los botones ▶️ ⏹️ 🗑️ para controlarlos."

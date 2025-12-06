@@ -1,31 +1,174 @@
-# Folders
+# ============================================
+# AUDIO & TRANSCRIPTION FILES
+# ============================================
+# Directorios de trabajo (audios y transcripciones)
+pending/
 processing/
 done/
-original/
-pending/
-transcribed/
 failed/
 
-# Files
-*.log
-*.pt
-*.wav
+# Archivos de audio y video
 *.mp3
+*.wav
 *.m4a
-*.flac
-*.aac
-*.ogg
-*.aiff
-*.aif
-*.mov
 *.mp4
-meta.json
+*.flac
+*.ogg
+*.aac
+*.wma
+*.mov
+*.avi
+*.mkv
+*.webm
 
-# Python specific files
+# Archivos de transcripción (solo en carpetas de trabajo)
+pending/*.txt
+processing/*.txt
+done/**/*.txt
+failed/*.txt
+pending/*.srt
+processing/*.srt
+done/**/*.srt
+failed/*.srt
+*.vtt
+
+# ============================================
+# PYTHON / BACKEND
+# ============================================
+# Byte-compiled / optimized / DLL files
 __pycache__/
-.ipynb_checkpoints/
-.DS_Store
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+backend/lib/
+backend/lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
 env/
-.venv/
-env.bak/
-.venv.bak/
+venv/
+ENV/
+.venv
+virtualenv/
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# ============================================
+# NODE.JS / FRONTEND
+# ============================================
+# Dependencies
+frontend/node_modules/
+frontend/.pnp
+frontend/.pnp.js
+
+# Testing
+frontend/coverage/
+
+# Next.js
+frontend/.next/
+frontend/out/
+
+# Production
+frontend/build/
+
+# Misc
+frontend/.DS_Store
+frontend/*.pem
+
+# Debug
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# Local env files
+frontend/.env*.local
+frontend/.env
+
+# Vercel
+frontend/.vercel
+
+# TypeScript build artifacts (not source files)
+frontend/.next/**/*.tsbuildinfo
+frontend/next-env.d.ts
+
+# ============================================
+# SYSTEM FILES
+# ============================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ============================================
+# WHISPER MODEL CACHE
+# ============================================
+# Modelos de Whisper descargados (muy pesados)
+~/.cache/whisper/
+
+# ============================================
+# TEMPORARY FILES
+# ============================================
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# ============================================
+# PROJECT SPECIFIC
+# ============================================
+# SQLite database
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Job state files
+jobs_state.json
+jobs_state.json.*
+
+# Pipeline logs
+pipeline.log
+
+# ============================================
+# KEEP THESE DIRECTORIES (but empty)
+# ============================================
+# Mantener estructura de carpetas pero vacías
+!pending/.gitkeep
+!processing/.gitkeep
+!done/.gitkeep
+!failed/.gitkeep
