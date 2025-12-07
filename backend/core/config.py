@@ -13,6 +13,15 @@ class Settings(BaseSettings):
     port: int = 8000
     reload: bool = True
     
+    # Security Settings
+    SECRET_KEY: str = "your-super-secret-key-change-in-production"
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    
+    # Simple Admin Credentials (Single User Strategy)
+    ADMIN_USERNAME: str = "admin"
+    ADMIN_PASSWORD: str = "admin123"  # Change in production via env var
+    
     # CORS settings
     cors_origins: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
     

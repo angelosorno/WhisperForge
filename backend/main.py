@@ -28,6 +28,10 @@ async def lifespan(app: FastAPI):
     print(f"📁 Upload dir: {settings.get_absolute_path(settings.upload_dir)}")
     print(f"⚙️  Whisper model: {settings.whisper_model}")
     
+    # Initialize translation engine
+    from core.translation_engine import translation_engine
+    await translation_engine.initialize()
+    
     yield
     
     # Shutdown
@@ -53,6 +57,10 @@ app.add_middleware(
 
 # Include API routes
 app.include_router(router, prefix="/api")
+
+# Include live translation routes
+from api.live_routes import router as live_router
+app.include_router(live_router, prefix="/api")
 
 
 @app.get("/")

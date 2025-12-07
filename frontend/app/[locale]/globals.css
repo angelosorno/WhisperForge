@@ -50,11 +50,40 @@
 }
 
 @layer base {
-  * {
-    @apply border-border;
+  /* Typography Scale - Mobile First */
+  h1 {
+    @apply text-3xl font-bold tracking-tight lg:text-5xl;
   }
-  body {
-    @apply bg-background text-foreground;
+  h2 {
+    @apply text-2xl font-semibold tracking-tight lg:text-3xl;
+  }
+  h3 {
+    @apply text-xl font-semibold tracking-tight lg:text-2xl;
+  }
+  h4 {
+    @apply text-lg font-semibold tracking-tight lg:text-xl;
+  }
+  p {
+    @apply text-base leading-7 lg:text-lg;
+  }
+  small {
+    @apply text-sm font-medium leading-none;
+  }
+}
+
+@layer utilities {
+  /* Touch Targets */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  .touch-target-large {
+    @apply min-h-[56px] min-w-[56px];
+  }
+
+  /* Safe Areas for Mobile */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }
 

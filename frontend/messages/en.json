@@ -1,0 +1,103 @@
+{
+    "Navigation": {
+        "home": "Home",
+        "transcribe": "Transcribe",
+        "jobs": "Jobs",
+        "live": "Live",
+        "broadcaster": "Broadcaster",
+        "listener": "Listener",
+        "history": "History",
+        "dashboard": "Dashboard"
+    },
+    "HomePage": {
+        "title": "The revolution of",
+        "titleHighlight": "live translation",
+        "description": "Transform your voice into text and translated audio instantly. Ideal for events, conferences, and multilingual streams.",
+        "startBroadcaster": "Start as Broadcaster",
+        "startListener": "Join as Listener",
+        "features": {
+            "formats": {
+                "title": "Multiple Formats",
+                "description": "Supports MP3, WAV, M4A, MP4, FLAC and over 30 audio and video formats"
+            },
+            "realtime": {
+                "title": "Real-time Progress",
+                "description": "Visualize transcription progress live with WebSocket"
+            },
+            "accuracy": {
+                "title": "High Accuracy",
+                "description": "High fidelity transcriptions with Whisper large-v3 models"
+            }
+        },
+        "stats": {
+            "models": "Available Models",
+            "languages": "Languages",
+            "formats": "Formats",
+            "accuracy": "Accuracy"
+        },
+        "buttons": {
+            "newTranscription": "New Transcription",
+            "viewJobs": "View Jobs"
+        }
+    },
+    "Broadcaster": {
+        "title": "Broadcast Panel",
+        "subtitle": "Control the live conference broadcast",
+        "status": {
+            "streaming": "Broadcasting Live",
+            "streamId": "Stream ID"
+        },
+        "configuration": "Configuration",
+        "church": {
+            "label": "Church Campus",
+            "zurich": "Zurich Church",
+            "geneva": "Geneva Church",
+            "bern": "Bern Church"
+        },
+        "sourceLanguage": {
+            "label": "Original Broadcast Language",
+            "hint": "Select the language you will speak during the broadcast"
+        },
+        "input": {
+            "label": "Microphone / Audio Source",
+            "hint": "Select the sound console or virtual audio device"
+        },
+        "output": {
+            "label": "Speaker / Headphones (Monitoring)",
+            "hint": "To hear what you are broadcasting (optional)"
+        },
+        "activeLanguages": "Active Translation Languages:",
+        "buttons": {
+            "start": "Start Broadcast",
+            "connecting": "Connecting...",
+            "stop": "Stop Broadcast"
+        },
+        "instructions": {
+            "title": "Usage Instructions",
+            "steps": [
+                "Select your church campus",
+                "Choose the audio source (sound console or virtual device)",
+                "Press 'Start Broadcast' when ready",
+                "The system will automatically translate to 4 languages",
+                "Listeners can tune in their preferred language at /live"
+            ],
+            "virtualAudio": {
+                "title": "Virtual Audio Configuration",
+                "text": "To capture audio from Meet/Zoom, you need a virtual audio device like:"
+            }
+        }
+    },
+    "Languages": {
+        "es": "Spanish",
+        "en": "English",
+        "de": "German",
+        "fr": "French",
+        "it": "Italian",
+        "pt": "Portuguese"
+    },
+    "Common": {
+        "loading": "Loading...",
+        "error": "Error",
+        "retry": "Retry"
+    }
+}

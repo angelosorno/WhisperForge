@@ -1,0 +1,147 @@
+{
+    "Navigation": {
+        "home": "Inicio",
+        "transcribe": "Transcribir",
+        "jobs": "Trabajos",
+        "live": "En Vivo",
+        "broadcaster": "Transmisor",
+        "listener": "Oyente",
+        "history": "Historial",
+        "dashboard": "Panel"
+    },
+    "HomePage": {
+        "title": "La revolución de la",
+        "titleHighlight": "traducción en vivo",
+        "description": "Transforma tu voz en texto y audio traducido instantáneamente. Ideal para eventos, conferencias y streams multilingües.",
+        "startBroadcaster": "Iniciar como Transmisor",
+        "startListener": "Unirse como Oyente",
+        "features": {
+            "formats": {
+                "title": "Múltiples Formatos",
+                "description": "Soporta MP3, WAV, M4A, MP4, FLAC y más de 30 formatos de audio y video"
+            },
+            "realtime": {
+                "title": "Progreso en Tiempo Real",
+                "description": "Visualiza el progreso de transcripción en vivo con WebSocket"
+            },
+            "accuracy": {
+                "title": "Alta Precisión",
+                "description": "Transcripciones de alta fidelidad con modelos Whisper large-v3"
+            }
+        },
+        "stats": {
+            "models": "Modelos Disponibles",
+            "languages": "Idiomas",
+            "formats": "Formatos",
+            "accuracy": "Precisión"
+        },
+        "buttons": {
+            "newTranscription": "Nueva Transcripción",
+            "viewJobs": "Ver Trabajos"
+        }
+    },
+    "Broadcaster": {
+        "title": "Panel de Emisión",
+        "subtitle": "Controla la transmisión en vivo de la conferencia",
+        "status": {
+            "streaming": "Transmitiendo en Vivo",
+            "streamId": "ID de Transmisión"
+        },
+        "configuration": "Configuración",
+        "church": {
+            "label": "Sede de la Iglesia",
+            "zurich": "Iglesia de Zúrich",
+            "geneva": "Iglesia de Ginebra",
+            "bern": "Iglesia de Berna"
+        },
+        "sourceLanguage": {
+            "label": "Idioma de la Transmisión Original",
+            "hint": "Selecciona el idioma en el que hablarás durante la transmisión"
+        },
+        "input": {
+            "label": "Micrófono / Fuente de Audio",
+            "hint": "Selecciona la consola de sonido o el dispositivo de audio virtual"
+        },
+        "output": {
+            "label": "Altavoz / Auriculares (Monitoreo)",
+            "hint": "Para escuchar lo que estás transmitiendo (opcional)"
+        },
+        "activeLanguages": "Idiomas de Traducción Activos:",
+        "buttons": {
+            "start": "Iniciar Transmisión",
+            "connecting": "Conectando...",
+            "stop": "Detener Transmisión"
+        },
+        "instructions": {
+            "title": "Instrucciones de Uso",
+            "steps": [
+                "Selecciona la sede de tu iglesia",
+                "Elige la fuente de audio (consola de sonido o dispositivo virtual)",
+                "Presiona 'Iniciar Transmisión' cuando estés listo",
+                "El sistema traducirá automáticamente a los 4 idiomas",
+                "Los oyentes podrán escuchar en su idioma preferido desde /live"
+            ],
+            "virtualAudio": {
+                "title": "Configuración de Audio Virtual",
+                "text": "Para capturar audio desde Meet/Zoom, necesitas un dispositivo de audio virtual como:"
+            }
+        }
+    },
+    "Languages": {
+        "es": "Español",
+        "en": "Inglés",
+        "de": "Alemán",
+        "fr": "Francés",
+        "it": "Italiano",
+        "pt": "Portugués"
+    },
+    "Common": {
+        "loading": "Cargando...",
+        "error": "Error",
+        "retry": "Reintentar"
+    },
+    "Live": {
+        "title": "En Vivo",
+        "subtitle": "Escucha las conferencias en tu idioma preferido",
+        "audio": {
+            "title": "Configuración de Audio",
+            "hide": "Ocultar",
+            "show": "Mostrar",
+            "outputLabel": "Altavoz / Auriculares",
+            "volumeLabel": "Volumen",
+            "permissionWarning": "Necesitamos permiso para ver los nombres de tus altavoces"
+        },
+        "church": {
+            "title": "Selecciona la Sede",
+            "Zurich": "Iglesia de Zúrich",
+            "Geneva": "Iglesia de Ginebra",
+            "Bern": "Iglesia de Berna",
+            "live": "En vivo",
+            "offline": "Sin transmisión"
+        },
+        "language": {
+            "title": "Selecciona tu Idioma",
+            "subtitle": "🇪🇸 Español: Audio original | 🌍 Otros: Traducción",
+            "original": "Original"
+        },
+        "player": {
+            "listening": "Escuchando en vivo",
+            "listeners": "oyentes",
+            "audioBtn": "Audio",
+            "stopBtn": "Detener",
+            "connecting": "Conectando...",
+            "startBtn": "Comenzar a Escuchar",
+            "noStream": "No hay transmisión activa en este momento"
+        },
+        "info": {
+            "title": "ℹ️ Cómo funciona",
+            "steps": [
+                "• Selecciona la sede de tu iglesia",
+                "• Elige el idioma en el que quieres escuchar",
+                "• Presiona 'Comenzar a Escuchar'",
+                "• Ajusta el volumen y altavoz desde el panel de audio",
+                "• Puedes cambiar el altavoz durante la transmisión"
+            ]
+        }
+    }
+}

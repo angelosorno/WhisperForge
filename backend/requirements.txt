@@ -7,6 +7,8 @@ aiofiles>=23.2.1
 pydantic>=2.11.10,<=2.12.4
 pydantic-settings>=2.1.0
 python-dotenv>=1.0.0
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
 
 # Whisper and ML dependencies
 torch==2.9.1
@@ -24,3 +26,14 @@ tiktoken==0.12.0
 regex==2025.9.18
 tqdm==4.66.4
 numpy==2.3.3
+
+# Live Translation
+# Note: SeamlessM4T requires fairseq2 which needs specific torch version
+# Install separately: pip install fairseq2 seamless-communication
+soundfile>=0.12.1
+librosa>=0.10.0
+webrtcvad>=2.0.10
+
+# Translation APIs
+openai>=1.0.0
+gtts>=2.5.0

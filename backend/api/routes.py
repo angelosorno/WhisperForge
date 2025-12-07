@@ -24,7 +24,11 @@ from models.schemas import (
 import torch
 import whisper
 
+from api import auth
+from api.auth import get_current_user
+
 router = APIRouter()
+router.include_router(auth.router, prefix="/auth")
 
 
 @router.get("/health", response_model=HealthResponse)

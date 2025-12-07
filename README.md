@@ -263,7 +263,7 @@ cd WhisperForge
 Ejecuta el instalador automático (macOS / Linux):
 
 ```bash
-chmod +x install.sh && ./install.sh
+chmod +x Install.sh && ./Install.sh
 ```
 
 El script hará lo siguiente por ti:
@@ -303,7 +303,7 @@ WhisperForge/
 ├── failed/        # Jobs con error (contienen audio + error.log)
 │
 ├── pipeline.log   # Log global con todas las ejecuciones
-├── install.sh     # Instalador automático
+├── Install.sh     # Instalador automático
 ├── requirements.txt # Dependencias
 ├── WhisperLoop.ipynb # Cuaderno principal
 └── WhisperBase.ipynb # Cuaderno básico
