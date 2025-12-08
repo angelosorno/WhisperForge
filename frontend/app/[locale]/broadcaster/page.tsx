@@ -32,8 +32,8 @@ export default function BroadcasterPage() {
     const [listenerCount, setListenerCount] = useState(0);
     const [error, setError] = useState('');
     const [isMonitoring, setIsMonitoring] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
     const [analyser, setAnalyser] = useState<AnalyserNode | undefined>(undefined);
+    const [isLoading, setIsLoading] = useState(true);
 
     const wsRef = useRef<WebSocket | null>(null);
     const mediaStreamRef = useRef<MediaStream | null>(null);
@@ -52,35 +52,16 @@ export default function BroadcasterPage() {
     useEffect(() => {
         async function getDevices() {
             try {
-                // 1. Try to enumerate first without forcing permission (avoids ducking if already granted)
-                let devices = await navigator.mediaDevices.enumerateDevices();
-                let audioInputs = devices.filter(d => d.kind === 'audioinput');
-                let audioOutputs = devices.filter(d => d.kind === 'audiooutput');
+                // Request permissions first
+                await navigator.mediaDevices.getUserMedia({ audio: true });
 
-                // 2. Check if we have labels (permission granted)
-                const hasLabels = audioInputs.length > 0 && audioInputs[0].label.length > 0;
-
-                if (!hasLabels) {
-                    try {
-                        // 3. Request permission ONLY if needed
-                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-                        // 4. Update list with labels
-                        devices = await navigator.mediaDevices.enumerateDevices();
-                        audioInputs = devices.filter(d => d.kind === 'audioinput');
-                        audioOutputs = devices.filter(d => d.kind === 'audiooutput');
-
-                        // 5. STOP the stream immediately to stop audio ducking
-                        stream.getTracks().forEach(t => t.stop());
-                    } catch (permErr) {
-                        console.warn('Microphone permission denied', permErr);
-                    }
-                }
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const audioInputs = devices.filter(d => d.kind === 'audioinput');
+                const audioOutputs = devices.filter(d => d.kind === 'audiooutput');
 
                 setAudioInputDevices(audioInputs);
                 setAudioOutputDevices(audioOutputs);
 
-                // ... rest of selection logic
                 if (audioInputs.length > 0 && !selectedInputDevice) {
                     setSelectedInputDevice(audioInputs[0].deviceId);
                 }
