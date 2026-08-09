@@ -1,3 +1,5 @@
+
+
 # WhisperForge Web Application 🎙️
 
 Una aplicación web profesional para transcripción de audio con **Next.js 14** y **FastAPI**, potenciada por **OpenAI Whisper**.
@@ -172,6 +174,7 @@ NEXT_PUBLIC_WS_URL=ws://localhost:8000/api/ws
 - **React Query** - Data fetching and caching
 - **Axios** - HTTP client
 - **Lucide React** - Icon library
+- **next-intl** - Internationalization and localization framework
 
 ## 🐛 Troubleshooting
 
@@ -442,4 +445,4 @@ Issues bienvenidos: rendimiento, compatibilidad, documentación.
 
 ---
 
-> **WhisperForge**: *“Convierte cualquier audio en texto claro, con métricas y control total.”*  
+> **WhisperForge**: *“Convierte cualquier audio en texto claro, con métricas y control total.”*
